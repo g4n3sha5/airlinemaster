@@ -16,7 +16,7 @@ export const Immer = () => {
     }
 
     const mutant = produce(Adam, draft =>{
-        draft.lastName = 'NieZmutowanaCzacha'
+        draft.lastName = 'Niemutowany'
     })
 
     // console.log(Adam)
@@ -29,3 +29,8 @@ export const Immer = () => {
             </>
     )
 }
+
+
+
+
+

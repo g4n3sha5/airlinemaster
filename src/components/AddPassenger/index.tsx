@@ -1,32 +1,47 @@
-import { Formik, Form, Field, useFormik } from "formik";
-import { UseMutationResult, useQueryClient } from "@tanstack/react-query";
-import { PostQuery } from "../../passengersQuery/passengers";
+import { useFormik } from 'formik';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useAddPassengerCacheMutation,
+  useAddPassengerMutation,
+} from '../../usePassengersQuery/passengers';
 
-const validate = (values: any): object => {
+export const validate = (values: any): object => {
   const regexName = /^[a-zA-Z]+$/;
   const regexTrips = /^[0-9]+$/;
   const errors: Record<any, string> = {};
 
   if (!values.name) {
-    errors.name = "Required";
+    errors.name = 'Required';
   } else if (!regexName.test(values.name)) {
-    errors.name = "Invalid name format";
+    errors.name = 'Invalid name format';
   }
   if (!regexTrips.test(values.trips)) {
-    errors.trips = "Wrong trips number format";
+    errors.trips = 'Wrong trips number format';
   }
 
   return errors;
 };
 
+const DataPreparator = (name: string, trips: string | number) => {
+  return { name, trips, airline: 5 };
+};
 export const AddPassenger = () => {
-  const queryCache = useQueryClient();
+  const queryClient = useQueryClient();
 
-  const postURL = "https://api.instantwebtools.net/v1/passenger";
-  const mutation = PostQuery(queryCache);
+  const postURL = 'https://api.instantwebtools.net/v1/passenger';
+  const mutation = useAddPassengerMutation(queryClient);
+  const mutationOptimistic = useAddPassengerCacheMutation(queryClient);
+  const addPassengerCache = () => {
+    let values = formik.values;
+    let name = values.name;
+    let trips = values.trips;
+    let valuez = DataPreparator(name, Number(trips));
+    console.log(mutationOptimistic.mutate(valuez))
+    mutationOptimistic.mutate(valuez);
+  };
   const formik = useFormik({
     initialValues: {
-      name: "",
+      name: '',
       trips: 1,
     },
     validate,
@@ -62,6 +77,14 @@ export const AddPassenger = () => {
         {formik.errors.trips ? <div>{formik.errors.trips}</div> : null}
         <button type="submit" className="btn btn-light m-4">
           Add passenger
+        </button>
+
+        <button
+          type="button"
+          onClick={addPassengerCache}
+          className="btn btn-light m-4"
+        >
+          Add passenger to cache
         </button>
       </form>
     </div>

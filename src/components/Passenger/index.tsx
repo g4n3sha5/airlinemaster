@@ -1,9 +1,19 @@
-import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom";
-import React, {MouseEventHandler, useEffect} from "react";
-import { getBySlug, DeletePassenger } from "../../passengersQuery/passengers";
-import {useQueryClient, useMutation, UseMutationResult} from "@tanstack/react-query";
-import axios from "axios";
+import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import React, { MouseEventHandler, useEffect, useState } from 'react';
+import {
+  useDeletePassengerMutation,
+  useEditPassengerMutation,
+  useGetPassengersQuery,
+} from '../../usePassengersQuery/passengers';
+import {
+  useQueryClient,
+  useMutation,
+  UseMutationResult,
+} from '@tanstack/react-query';
+import axios from 'axios';
+import { useFormik } from 'formik';
+import { validate } from '../AddPassenger';
 
 export type AirPassengerType = {
   _id: string;
@@ -11,7 +21,6 @@ export type AirPassengerType = {
   trips: number;
   identificator?: string;
   airlineName?: string;
-
 };
 
 export const AirPassenger = ({
@@ -21,33 +30,87 @@ export const AirPassenger = ({
   identificator,
   airlineName,
 }: AirPassengerType) => {
+  const [showStatus, setShowStatus] = useState(false);
+  const queryClient = useQueryClient();
+  const mutationRemove = useDeletePassengerMutation(queryClient);
+  const mutationEdit = useEditPassengerMutation(_id, queryClient);
+  const clickable = window.location.pathname == '/';
 
-  const queryCache = useQueryClient();
-
-  const handleClick = (id: string, e: React.MouseEvent) => {
+  const handleRemove = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
-    const mutation = DeletePassenger(queryCache)
-    return mutation.mutate(_id);
-  }
-  // const deletePassenger  = useMutation((id: string) => {
-  //   return axios.delete(`https://api.instantwebtools.net/v1/passenger/${id}`);
-  // });
+    return mutationRemove.mutate(_id);
+  };
+
+  const handleEdit = (id: string, e: React.MouseEvent) => {
+    // e.preventDefault();
+    // return mutationEdit.mutate(_id);z
+  };
+
+  const formik = useFormik({
+    initialValues: { name: name, trips: trips },
+    validate,
+    onSubmit: (values) => {
+      console.log(values);
+      let valuez = {...values, airline: 8}
+      mutationEdit.mutate(valuez)
+    },
+  });
 
 
-  const clickable = window.location.pathname == "/";
   return (
-    <Link key={_id} to={{ pathname: `passenger/${_id}` }}>
+    <Link key={_id}  to={{ pathname: `passenger/${_id}` }}>
       <div className="p-3 airPassenger">
         <button
-          onClick={(event: any) => handleClick(_id, event)}
-          className="btn btn-dark p-3 m-1 d-inline"
+          onClick={(event: any) => handleRemove(_id, event)}
+          className="btn btn-danger p-3 m-1 d-inline"
         >
           X
         </button>
-        <h1 className="d-inline">
-          Passenger {name} <br /> <br /> #{identificator} <br /> with {trips}{" "}
-          trips
-        </h1>
+        <form className="d-inline" onSubmit={formik.handleSubmit}>
+          <h1 className="d-inline">
+            Passenger {name} #{identificator} with  { trips } trips
+          </h1>
+
+          {showStatus && (
+            <input
+              name="name"
+              placeholder="passenger name"
+              onClick={(event) => event.preventDefault()}
+              onChange={formik.handleChange}
+              value={formik.values.name}
+            />
+          )}
+
+          {showStatus && (formik.errors.name ? <div>{formik.errors.name}</div> : null)}
+
+
+
+          {showStatus && (
+            <input
+              name="trips"
+              placeholder="passenger trips amount"
+              onClick={(event) => event.preventDefault()}
+              onChange={formik.handleChange}
+              value={formik.values.trips}
+            />
+          )}
+          {showStatus &&
+            (formik.errors.trips ? <div>{formik.errors.trips}</div> : null)}
+
+          {showStatus && <button type="submit" onClick={(event) => event.stopPropagation()} className="btn btn-dark m-4">
+            Submit
+          </button>}
+
+        </form>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setShowStatus(!showStatus);
+          }}
+          className="btn btn-light   d-inline m-2"
+        >
+          EDIT
+        </button>
         <br />
         <h2>{airlineName}</h2>
       </div>
@@ -68,10 +131,11 @@ export const PassengerObjects = (passengers: AirPassengerType[]) => {
 
 export const AirPassengerPage = () => {
   const params: any = useParams() as { params: string };
-  const queryCache = useQueryClient()
+  const queryCache = useQueryClient();
   let id = params.slug;
-  let passenger = getBySlug(id).passengersData?.data;
+  let passenger = useGetPassengersQuery(id).passengersData?.data;
   let airlines = passenger?.airline[0].name;
+
   return (
     <>
       <h1>This is your single passenger full info!</h1>

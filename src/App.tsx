@@ -13,6 +13,7 @@ function App() {
       <Switch>
         <Route exact path="/" component={Home} />
         <Route path="/about" component={About} />
+        {/*<Route path="/passenger/:slug" element={<AirPassengerPage/>} />*/}
         <Route path="/passenger/:slug" component={AirPassengerPage} />
       </Switch>
     </Router>
