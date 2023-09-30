@@ -8,7 +8,7 @@
 
   <p align="center">
    This is a simple app to work with APIs, it is using TypeScript, React, React Query and React Router v5.
-    This app is not focused on User Experience and User Interface. It is focused entirely on learning handling API requests. It is using fake Airline Passenger API.
+    This app is not focused on User Experience and User Interface. It is focused entirely on learning how to handle API requests. It is using fake Airline Passenger API.
   </p>
 </div>
 
