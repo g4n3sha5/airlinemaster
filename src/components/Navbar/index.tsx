@@ -21,7 +21,7 @@ const Index = () => {
     return (
         <header >
 
-                    {/*{NAV_ITEMS.map(NavItem)}*/}
+                    {/*{NAV_ITEMS.map(nav => <NavItem nav/>)}*/}
 
 
         </header>
